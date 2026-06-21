@@ -1,0 +1,41 @@
+{
+  "name": "@opsflow/domain-support",
+  "version": "0.1.0",
+  "description": "OpsFlow support-industry capability package — tools + policies. Depends on @opsflow/platform + @opsflow/contracts.",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@opsflow/contracts": "file:../opsflow-contracts",
+    "@opsflow/platform": "file:../opsflow-platform",
+    "zod": "^4.3.6"
+  },
+  "peerDependencies": {
+    "mongoose": "^8.6.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.2.3",
+    "jest": "^30.4.2",
+    "mongoose": "^8.6.0",
+    "ts-jest": "^29.4.10",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OgunrekunAyoola/opsflow-domain-support.git"
+  }
+}
