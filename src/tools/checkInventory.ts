@@ -27,7 +27,11 @@ export const checkInventory: ToolDefinition = {
 
     const matches = await productCatalogRepository.searchActive(tenantId, words, MAX_RESULTS);
     const items = matches.flatMap((p) => {
-      const product = p as { name: string; status?: string; variants?: Array<{ sku: string; stockQty?: number }> };
+      const product = p as {
+        name: string;
+        status?: string;
+        variants?: Array<{ sku: string; stockQty?: number }>;
+      };
       return (product.variants ?? []).map((v) => {
         const hasQty = typeof v.stockQty === 'number';
         return {

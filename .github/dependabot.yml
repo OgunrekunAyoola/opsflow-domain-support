@@ -1,0 +1,10 @@
+version: 2
+# npm ecosystem is intentionally omitted: this repo's @opsflow/* deps are file:-linked
+# siblings that Dependabot can't resolve in its sandbox (it errors). npm dep updates
+# resolve once the opsflow-devspace workspace / published packages land. GitHub Actions
+# updates work fine and are kept.
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

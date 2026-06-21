@@ -16,7 +16,7 @@ export const getCustomerOrders: ToolDefinition = {
   description:
     "List a customer's recent orders by their email address. Read-only — returns " +
     'order IDs, status, total, and tracking number, most recent first. Use this to ' +
-    'see a customer\'s order history. Does not modify anything and never exposes payment details.',
+    "see a customer's order history. Does not modify anything and never exposes payment details.",
   schema: z.object({
     customerEmail: z.string().email().describe('The customer email address on the order'),
   }),

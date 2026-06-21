@@ -13,6 +13,10 @@ export const checkOrderStatus: ToolDefinition = {
     const { orderId } = args as { orderId: string };
     const order = await orderRepository.findOne(tenantId, { orderId } as any);
     if (!order) return { status: 'not_found', reason: 'Order not found' };
-    return { status: (order as any).status, tracking: (order as any).trackingNumber, total: (order as any).total };
+    return {
+      status: (order as any).status,
+      tracking: (order as any).trackingNumber,
+      total: (order as any).total,
+    };
   },
 };

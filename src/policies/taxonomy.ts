@@ -16,14 +16,27 @@ export interface SupportCategory {
 }
 
 export const SUPPORT_CATEGORIES: SupportCategory[] = [
-  { id: 'billing',         description: 'invoices, charges, subscriptions, pricing questions (NOT refund requests — those are returns)' },
-  { id: 'shipping',        description: 'delivery, tracking, order status, "where is my order"' },
-  { id: 'returns',         description: 'returns, exchanges, refund requests, cancellations of an order' },
-  { id: 'technical',       description: 'something is broken, errors, bugs, the product/app not working as expected' },
-  { id: 'account',         description: 'login, password reset, profile, access, account settings' },
-  { id: 'feature_request', description: 'asking for a new capability or product change that does not exist yet' },
-  { id: 'general',         description: 'a genuine support question that fits none of the above but is clearly in scope' },
-  { id: 'other',           description: 'spam, out-of-scope, unintelligible, or not a support request at all' },
+  {
+    id: 'billing',
+    description:
+      'invoices, charges, subscriptions, pricing questions (NOT refund requests — those are returns)',
+  },
+  { id: 'shipping', description: 'delivery, tracking, order status, "where is my order"' },
+  { id: 'returns', description: 'returns, exchanges, refund requests, cancellations of an order' },
+  {
+    id: 'technical',
+    description: 'something is broken, errors, bugs, the product/app not working as expected',
+  },
+  { id: 'account', description: 'login, password reset, profile, access, account settings' },
+  {
+    id: 'feature_request',
+    description: 'asking for a new capability or product change that does not exist yet',
+  },
+  {
+    id: 'general',
+    description: 'a genuine support question that fits none of the above but is clearly in scope',
+  },
+  { id: 'other', description: 'spam, out-of-scope, unintelligible, or not a support request at all' },
 ];
 
 export const SUPPORT_CATEGORY_IDS: string[] = SUPPORT_CATEGORIES.map((c) => c.id);

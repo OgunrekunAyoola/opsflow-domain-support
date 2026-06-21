@@ -38,7 +38,10 @@ export const updateDeliveryAddress: ToolDefinition = {
     const updated = await orderRepository.updateShippingAddress(tenantId, orderId, address);
     if (!updated) {
       // Raced with dispatch between the read and the write — pre-dispatch guard lost.
-      return { success: false, reason: 'The address could not be changed — the order just moved to dispatch.' };
+      return {
+        success: false,
+        reason: 'The address could not be changed — the order just moved to dispatch.',
+      };
     }
 
     logger.info(`[Action] Delivery address updated — order=${orderId} ticket=${ticketId ?? 'none'}`);

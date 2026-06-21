@@ -19,10 +19,11 @@ export const refundOrder: ToolDefinition = {
   execute: async (args: unknown, { tenantId, ticketId }) => {
     const { orderRepository } = supportDeps();
     const { orderId, reason } = args as { orderId: string; reason: string };
-    const order = await orderRepository.findByOrderId(tenantId, orderId) as any;
+    const order = (await orderRepository.findByOrderId(tenantId, orderId)) as any;
     if (!order) return { success: false, reason: 'Order not found' };
     if (order.status === 'refunded') return { success: false, reason: 'Already refunded' };
-    if (order.status === 'pending_refund') return { success: false, reason: 'Refund review already in progress' };
+    if (order.status === 'pending_refund')
+      return { success: false, reason: 'Refund review already in progress' };
 
     // Generate a cryptographically secure tracking ID for the review request.
     // This is a REQUEST ID, not a refund confirmation — no funds have moved.
@@ -33,7 +34,9 @@ export const refundOrder: ToolDefinition = {
       return { success: false, reason: 'Refund review already in progress' };
     }
 
-    logger.info(`[Action] Refund review submitted — order=${orderId} reviewId=${reviewId} ticket=${ticketId ?? 'none'}`);
+    logger.info(
+      `[Action] Refund review submitted — order=${orderId} reviewId=${reviewId} ticket=${ticketId ?? 'none'}`,
+    );
     return {
       success: true,
       reviewId,
