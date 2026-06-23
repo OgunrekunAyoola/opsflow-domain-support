@@ -45,7 +45,13 @@ export const COMMERCE_INTENT_DEFS: CommerceIntentDef[] = [
       'greetings, business hours/location/coverage, thanks, reviews, general rapport (no specific ask)',
   },
   { id: 'compliance', description: 'opt-out / unsubscribe / "stop messaging me" / data-deletion requests' },
-  { id: 'noise', description: 'spam, out-of-scope, wrong business, unintelligible, or not a real request' },
+  {
+    id: 'noise',
+    description:
+      'genuine junk ONLY — spam, gibberish, or not a real request. NOTE: a real product question for ' +
+      'something we do not sell (wrong shop) keeps its true intent (usually "discovery"); the separate ' +
+      'requestScope="out" flag marks "not us" — never label a real-but-out-of-scope customer as noise.',
+  },
 ];
 
 export const COMMERCE_INTENT_IDS: string[] = COMMERCE_INTENTS.slice();
