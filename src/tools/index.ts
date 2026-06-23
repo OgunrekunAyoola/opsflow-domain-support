@@ -16,6 +16,7 @@ import { checkInventory } from './checkInventory';
 import { updateDeliveryAddress } from './updateDeliveryAddress';
 import { addOrderNote } from './addOrderNote';
 import { createOrder } from './createOrder';
+import { paymentLink } from './paymentLink';
 
 export const supportTools: Record<string, ToolDefinition> = {
   escalate_ticket: escalateTicket,
@@ -32,4 +33,7 @@ export const supportTools: Record<string, ToolDefinition> = {
   // Conversion (CONVERSION_CAPABILITY_DESIGN) — captures an UNPAID order; mutating + audited;
   // never takes/confirms payment so NOT humanOnly.
   create_order: createOrder,
+  // Generates a pay link for an unpaid order (graceful-degrades w/o a provider); never confirms
+  // payment (webhook only, ADR-068); NOT humanOnly.
+  payment_link: paymentLink,
 };
