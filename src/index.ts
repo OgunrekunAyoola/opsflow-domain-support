@@ -10,3 +10,4 @@ export { supportTools } from './tools';
 export { setSupportDeps, supportDeps } from './deps';
 export type { SupportDeps, EmailSender } from './deps';
 export * from './policies/taxonomy';
+export * from './policies/commerceIntent';
