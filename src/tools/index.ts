@@ -15,6 +15,7 @@ import { productLookup } from './productLookup';
 import { checkInventory } from './checkInventory';
 import { updateDeliveryAddress } from './updateDeliveryAddress';
 import { addOrderNote } from './addOrderNote';
+import { createOrder } from './createOrder';
 
 export const supportTools: Record<string, ToolDefinition> = {
   escalate_ticket: escalateTicket,
@@ -28,4 +29,7 @@ export const supportTools: Record<string, ToolDefinition> = {
   // Operational writes (Phase 1.5) — mutating + audited, pre-dispatch guarded, never humanOnly.
   update_delivery_address: updateDeliveryAddress,
   add_order_note: addOrderNote,
+  // Conversion (CONVERSION_CAPABILITY_DESIGN) — captures an UNPAID order; mutating + audited;
+  // never takes/confirms payment so NOT humanOnly.
+  create_order: createOrder,
 };
