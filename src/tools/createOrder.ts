@@ -7,12 +7,16 @@ import { supportDeps } from '../deps';
  * catalog by exact SKU (never trusts an agent-claimed price), then creates an UNPAID `pending`
  * order. Tenant-scoped (ADR-002), repository-backed, audited + idempotent (in MUTATING_TOOLS).
  *
- * NOT humanOnly: creating an unpaid order is operational, not a money confirmation (ADR-068).
- * It NEVER takes or confirms payment — a payment link / human handles that, and only the processor
- * webhook marks an order paid.
+ * humanOnly: true — HITL for now (AUTONOMY_AND_HITL_REGISTER, decided 2026-06-23). Order capture is
+ * held human-in-the-loop until we understand how vendors/clients actually use it; the AI may help
+ * the customer settle items but a human creates the order. The tool + pricing/stock logic stay
+ * ready — flip humanOnly off + re-add to allowedTools to graduate it to autonomous later. (It never
+ * confirms payment either way — only the processor webhook marks an order paid, ADR-068.)
  */
 export const createOrder: ToolDefinition = {
   name: 'create_order',
+  // humanOnly: true — AI agents may never call this yet (HITL until vendor-usage is understood).
+  humanOnly: true,
   description:
     'Capture a new order for in-stock catalog items. Creates an UNPAID (pending) order priced from ' +
     'the catalog and returns the order id + total. Use it AFTER confirming items + quantities with ' +
