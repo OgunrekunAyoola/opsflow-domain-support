@@ -9,7 +9,7 @@ export const checkOrderStatus: ToolDefinition = {
   schema: z.object({
     orderId: z.string().describe('The order ID (e.g., ORD-123)'),
   }),
-  execute: async (args: unknown, { tenantId, customerEmail }) => {
+  execute: async (args: unknown, { tenantId, customerEmail, customerPhone }) => {
     const { orderRepository } = supportDeps();
     const { orderId } = args as { orderId: string };
     const order = (await orderRepository.findOne(tenantId, { orderId } as any)) as {
@@ -17,10 +17,11 @@ export const checkOrderStatus: ToolDefinition = {
       trackingNumber?: string;
       total?: number;
       customerEmail?: string;
+      customerPhone?: string;
     } | null;
     // H2 / ADR-002: only surface the order if it belongs to THIS conversation's customer.
     // Fail-closed (don't reveal existence) when identity is missing or doesn't match.
-    if (!order || !ownsOrder(order, { customerEmail }))
+    if (!order || !ownsOrder(order, { customerEmail, customerPhone }))
       return { status: 'not_found', reason: 'Order not found' };
     return {
       status: order.status,

@@ -20,16 +20,18 @@ export const updateDeliveryAddress: ToolDefinition = {
     orderId: z.string().describe('The order ID, e.g. ORD-123'),
     address: z.string().min(5).describe('The new full delivery address'),
   }),
-  execute: async (args: unknown, { tenantId, ticketId, customerEmail }) => {
+  execute: async (args: unknown, { tenantId, ticketId, customerEmail, customerPhone }) => {
     const { orderRepository } = supportDeps();
     const { orderId, address } = args as { orderId: string; address: string };
 
     const order = (await orderRepository.findByOrderId(tenantId, orderId)) as {
       status: string;
       customerEmail?: string;
+      customerPhone?: string;
     } | null;
     // H2 / ADR-002: never mutate an order that isn't this conversation customer's. Fail-closed.
-    if (!order || !ownsOrder(order, { customerEmail })) return { success: false, reason: 'Order not found' };
+    if (!order || !ownsOrder(order, { customerEmail, customerPhone }))
+      return { success: false, reason: 'Order not found' };
 
     const status = order.status;
     if (status !== 'pending') {

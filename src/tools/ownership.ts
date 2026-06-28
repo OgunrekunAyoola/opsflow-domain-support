@@ -7,13 +7,16 @@
  * from the authenticated ticket, never from tool args — and FAIL-CLOSED when that identity is
  * missing (deny rather than leak another customer's data).
  *
- * Orders are keyed by `customerEmail` today; a phone-only conversation (no resolved email) therefore
- * fails this check and is denied — the correct safe behaviour until identity resolution maps the
- * channel address to a customer (see CONVERSATION_DRIVER_ARCHITECTURE §8.13 / I1–I4).
+ * Ownership matches on ANY trusted contact key: an email customer by `customerEmail`, a WhatsApp/voice
+ * customer by `customerPhone` (orders carry both — slice 2 / I2). Fails closed when neither the order nor
+ * the context carries a matching key (see CONVERSATION_DRIVER_ARCHITECTURE §8.13 / I1–I4).
  */
 export function ownsOrder(
-  order: { customerEmail?: string } | null | undefined,
-  ctx: { customerEmail?: string },
+  order: { customerEmail?: string; customerPhone?: string } | null | undefined,
+  ctx: { customerEmail?: string; customerPhone?: string },
 ): boolean {
-  return Boolean(order && ctx.customerEmail && order.customerEmail === ctx.customerEmail);
+  if (!order) return false;
+  const emailMatch = Boolean(ctx.customerEmail && order.customerEmail === ctx.customerEmail);
+  const phoneMatch = Boolean(ctx.customerPhone && order.customerPhone === ctx.customerPhone);
+  return emailMatch || phoneMatch;
 }

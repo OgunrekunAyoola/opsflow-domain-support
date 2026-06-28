@@ -18,15 +18,17 @@ export const addOrderNote: ToolDefinition = {
     orderId: z.string().describe('The order ID, e.g. ORD-123'),
     note: z.string().min(1).describe('The internal note to record'),
   }),
-  execute: async (args: unknown, { tenantId, ticketId, customerEmail }) => {
+  execute: async (args: unknown, { tenantId, ticketId, customerEmail, customerPhone }) => {
     const { orderRepository } = supportDeps();
     const { orderId, note } = args as { orderId: string; note: string };
 
     // H2 / ADR-002: verify the order belongs to this conversation's customer before mutating.
     const order = (await orderRepository.findByOrderId(tenantId, orderId)) as {
       customerEmail?: string;
+      customerPhone?: string;
     } | null;
-    if (!order || !ownsOrder(order, { customerEmail })) return { success: false, reason: 'Order not found' };
+    if (!order || !ownsOrder(order, { customerEmail, customerPhone }))
+      return { success: false, reason: 'Order not found' };
 
     const updated = await orderRepository.addNote(tenantId, orderId, note);
     if (!updated) return { success: false, reason: 'Order not found' };

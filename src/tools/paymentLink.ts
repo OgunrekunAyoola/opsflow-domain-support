@@ -19,17 +19,18 @@ export const paymentLink: ToolDefinition = {
   schema: z.object({
     orderId: z.string().min(1).describe('The order ID to collect payment for, e.g. ORD-ABC123'),
   }),
-  execute: async (args: unknown, { tenantId, customerEmail }) => {
+  execute: async (args: unknown, { tenantId, customerEmail, customerPhone }) => {
     const { orderRepository, paymentLinkProvider } = supportDeps();
     const { orderId } = args as { orderId: string };
 
     const order = (await orderRepository.findByOrderId(tenantId, orderId)) as {
       total: number;
       customerEmail: string;
+      customerPhone?: string;
       paidAt?: Date;
     } | null;
     // H2 / ADR-002: only issue a payment link for THIS customer's order. Fail-closed.
-    if (!order || !ownsOrder(order, { customerEmail }))
+    if (!order || !ownsOrder(order, { customerEmail, customerPhone }))
       return { success: false, reason: `Order "${orderId}" not found.` };
     if (order.paidAt) return { success: false, reason: `Order "${orderId}" is already paid.` };
 

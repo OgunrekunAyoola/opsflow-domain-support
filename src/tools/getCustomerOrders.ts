@@ -19,13 +19,16 @@ export const getCustomerOrders: ToolDefinition = {
     'you cannot look up another person. Never exposes payment details.',
   // No identity arg (H2): the customer is bound from the authenticated conversation, never the model.
   schema: z.object({}),
-  execute: async (_args: unknown, { tenantId, customerEmail }) => {
+  execute: async (_args: unknown, { tenantId, customerEmail, customerPhone }) => {
     const { orderRepository } = supportDeps();
-    // Fail-closed: without a trusted conversation identity we cannot scope to one customer.
-    if (!customerEmail) {
+    // Fail-closed: without a trusted identity (email OR phone) we cannot scope to one customer.
+    if (!customerEmail && !customerPhone) {
       return { found: 0, orders: [], reason: 'Customer identity not verified for this conversation.' };
     }
-    const orders = await orderRepository.findByCustomerEmail(tenantId, customerEmail);
+    const orders = await orderRepository.findByCustomerContact(tenantId, {
+      email: customerEmail,
+      phone: customerPhone,
+    });
     if (!orders.length) return { found: 0, orders: [] };
 
     const recent = [...orders]

@@ -12,7 +12,7 @@ import { updateDeliveryAddress } from '../tools/updateDeliveryAddress';
 import { addOrderNote } from '../tools/addOrderNote';
 import { resetPassword } from '../tools/resetPassword';
 
-const findByCustomerEmail = jest.fn();
+const findByCustomerContact = jest.fn();
 const findOne = jest.fn();
 const findByOrderId = jest.fn();
 const addNote = jest.fn();
@@ -28,7 +28,7 @@ const anon = { tenantId: TENANT, ticketId: 'tk1' }; // no trusted identity resol
 beforeEach(() => {
   jest.clearAllMocks();
   setSupportDeps({
-    orderRepository: { findByCustomerEmail, findOne, findByOrderId, addNote, updateShippingAddress } as any,
+    orderRepository: { findByCustomerContact, findOne, findByOrderId, addNote, updateShippingAddress } as any,
     productCatalogRepository: {} as any,
     userRepository: { findByEmail, updateById } as any,
     ticketRepository: {} as any,
@@ -38,16 +38,24 @@ beforeEach(() => {
 });
 
 describe('get_customer_orders — identity from context', () => {
-  it('queries by the trusted ctx email, ignoring any model-supplied email', async () => {
-    findByCustomerEmail.mockResolvedValue([{ orderId: 'ORD-1', status: 'pending', total: 10 }]);
+  it('queries by the trusted ctx contact, ignoring any model-supplied email', async () => {
+    findByCustomerContact.mockResolvedValue([{ orderId: 'ORD-1', status: 'pending', total: 10 }]);
     const out: any = await getCustomerOrders.execute({ customerEmail: 'victim@x.com' } as any, owned);
-    expect(findByCustomerEmail).toHaveBeenCalledWith(TENANT, 'me@x.com');
+    expect(findByCustomerContact).toHaveBeenCalledWith(TENANT, { email: 'me@x.com', phone: undefined });
+    expect(out.found).toBe(1);
+  });
+
+  it('queries by phone for a WhatsApp customer with no email', async () => {
+    findByCustomerContact.mockResolvedValue([{ orderId: 'ORD-9', status: 'shipped', total: 20 }]);
+    const phoneCtx = { tenantId: TENANT, ticketId: 'tk1', customerPhone: '+2348012345678' };
+    const out: any = await getCustomerOrders.execute({}, phoneCtx);
+    expect(findByCustomerContact).toHaveBeenCalledWith(TENANT, { email: undefined, phone: '+2348012345678' });
     expect(out.found).toBe(1);
   });
 
   it('fail-closes (no lookup) when the conversation has no identity', async () => {
     const out: any = await getCustomerOrders.execute({}, anon);
-    expect(findByCustomerEmail).not.toHaveBeenCalled();
+    expect(findByCustomerContact).not.toHaveBeenCalled();
     expect(out.found).toBe(0);
   });
 });
@@ -61,6 +69,13 @@ describe('check_order_status — ownership', () => {
       customerEmail: 'me@x.com',
     });
     const out: any = await checkOrderStatus.execute({ orderId: 'ORD-1' }, owned);
+    expect(out.status).toBe('shipped');
+  });
+
+  it('matches a WhatsApp customer by phone (no email on either side)', async () => {
+    findOne.mockResolvedValue({ status: 'shipped', total: 5, customerPhone: '+2348012345678' });
+    const phoneCtx = { tenantId: TENANT, ticketId: 'tk1', customerPhone: '+2348012345678' };
+    const out: any = await checkOrderStatus.execute({ orderId: 'ORD-1' }, phoneCtx);
     expect(out.status).toBe('shipped');
   });
 
