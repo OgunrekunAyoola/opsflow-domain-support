@@ -5,14 +5,15 @@ import { supportDeps } from '../deps';
 
 export const resetPassword: ToolDefinition = {
   name: 'reset_password',
-  description: 'Trigger a password reset email for a user',
-  schema: z.object({
-    email: z.string().email(),
-  }),
-  execute: async (args: unknown, { tenantId }) => {
+  description: 'Trigger a password reset email for the current customer',
+  // No email arg (H2): the account is the conversation's own customer, never a model-supplied address.
+  schema: z.object({}),
+  execute: async (_args: unknown, { tenantId, customerEmail }) => {
     const { userRepository, emailService } = supportDeps();
-    const { email } = args as { email: string };
-    const user = (await userRepository.findByEmail(tenantId, email)) as any;
+    // Fail-closed: only ever reset the authenticated conversation customer's own password.
+    if (!customerEmail)
+      return { success: false, message: 'Customer identity not verified for this conversation.' };
+    const user = (await userRepository.findByEmail(tenantId, customerEmail)) as any;
     if (!user) return { success: false, message: 'User not found' };
 
     const token = crypto.randomBytes(20).toString('hex');
@@ -22,7 +23,7 @@ export const resetPassword: ToolDefinition = {
 
     await emailService
       .send({
-        to: email,
+        to: customerEmail,
         subject: 'Password Reset Request',
         text: `Your password reset token is: ${token}`,
         html: `<p>Your password reset token is: <strong>${token}</strong></p>`,

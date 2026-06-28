@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { logger, type ToolDefinition } from '@opsflow/platform';
 import { supportDeps } from '../deps';
+import { ownsOrder } from './ownership';
 
 /**
  * Change an order's delivery address — PRE-DISPATCH ONLY. Tenant-scoped from context
@@ -19,14 +20,18 @@ export const updateDeliveryAddress: ToolDefinition = {
     orderId: z.string().describe('The order ID, e.g. ORD-123'),
     address: z.string().min(5).describe('The new full delivery address'),
   }),
-  execute: async (args: unknown, { tenantId, ticketId }) => {
+  execute: async (args: unknown, { tenantId, ticketId, customerEmail }) => {
     const { orderRepository } = supportDeps();
     const { orderId, address } = args as { orderId: string; address: string };
 
-    const order = await orderRepository.findByOrderId(tenantId, orderId);
-    if (!order) return { success: false, reason: 'Order not found' };
+    const order = (await orderRepository.findByOrderId(tenantId, orderId)) as {
+      status: string;
+      customerEmail?: string;
+    } | null;
+    // H2 / ADR-002: never mutate an order that isn't this conversation customer's. Fail-closed.
+    if (!order || !ownsOrder(order, { customerEmail })) return { success: false, reason: 'Order not found' };
 
-    const status = (order as { status: string }).status;
+    const status = order.status;
     if (status !== 'pending') {
       return {
         success: false,

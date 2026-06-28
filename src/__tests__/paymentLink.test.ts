@@ -20,7 +20,7 @@ function wire(withProvider: boolean) {
   });
 }
 
-const ctx = { tenantId: 'aaaaaaaaaaaaaaaaaaaaaaaa', ticketId: 'tk1' };
+const ctx = { tenantId: 'aaaaaaaaaaaaaaaaaaaaaaaa', ticketId: 'tk1', customerEmail: 'c@x.com' };
 
 describe('payment_link tool', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -60,6 +60,27 @@ describe('payment_link tool', () => {
     const out: any = await paymentLink.execute({ orderId: 'ORD-X' }, ctx);
     expect(out.success).toBe(false);
     expect(out.reason).toContain('already paid');
+    expect(createLink).not.toHaveBeenCalled();
+  });
+
+  // H2 / ADR-002 — ownership: never issue a link for an order the conversation customer does not own.
+  it('denies an order belonging to a different customer (no cross-customer leak)', async () => {
+    wire(true);
+    findByOrderId.mockResolvedValue({ total: 1, customerEmail: 'someone-else@x.com' });
+    const out: any = await paymentLink.execute({ orderId: 'ORD-X' }, ctx);
+    expect(out.success).toBe(false);
+    expect(out.reason).toContain('not found');
+    expect(createLink).not.toHaveBeenCalled();
+  });
+
+  it('fail-closes when the conversation has no trusted customer identity', async () => {
+    wire(true);
+    findByOrderId.mockResolvedValue({ total: 1, customerEmail: 'c@x.com' });
+    const out: any = await paymentLink.execute(
+      { orderId: 'ORD-X' },
+      { tenantId: 'aaaaaaaaaaaaaaaaaaaaaaaa', ticketId: 'tk1' },
+    );
+    expect(out.success).toBe(false);
     expect(createLink).not.toHaveBeenCalled();
   });
 });

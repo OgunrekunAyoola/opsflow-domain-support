@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { logger, type ToolDefinition } from '@opsflow/platform';
 import { supportDeps } from '../deps';
+import { ownsOrder } from './ownership';
 
 /**
  * Append an internal note to an order (team-visible, never shown to the customer).
@@ -17,9 +18,15 @@ export const addOrderNote: ToolDefinition = {
     orderId: z.string().describe('The order ID, e.g. ORD-123'),
     note: z.string().min(1).describe('The internal note to record'),
   }),
-  execute: async (args: unknown, { tenantId, ticketId }) => {
+  execute: async (args: unknown, { tenantId, ticketId, customerEmail }) => {
     const { orderRepository } = supportDeps();
     const { orderId, note } = args as { orderId: string; note: string };
+
+    // H2 / ADR-002: verify the order belongs to this conversation's customer before mutating.
+    const order = (await orderRepository.findByOrderId(tenantId, orderId)) as {
+      customerEmail?: string;
+    } | null;
+    if (!order || !ownsOrder(order, { customerEmail })) return { success: false, reason: 'Order not found' };
 
     const updated = await orderRepository.addNote(tenantId, orderId, note);
     if (!updated) return { success: false, reason: 'Order not found' };

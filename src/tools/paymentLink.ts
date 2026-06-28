@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { ToolDefinition } from '@opsflow/platform';
 import { supportDeps } from '../deps';
+import { ownsOrder } from './ownership';
 
 /**
  * Generate a customer payment link for an existing UNPAID order (CONVERSION_CAPABILITY_DESIGN).
@@ -18,7 +19,7 @@ export const paymentLink: ToolDefinition = {
   schema: z.object({
     orderId: z.string().min(1).describe('The order ID to collect payment for, e.g. ORD-ABC123'),
   }),
-  execute: async (args: unknown, { tenantId }) => {
+  execute: async (args: unknown, { tenantId, customerEmail }) => {
     const { orderRepository, paymentLinkProvider } = supportDeps();
     const { orderId } = args as { orderId: string };
 
@@ -27,7 +28,9 @@ export const paymentLink: ToolDefinition = {
       customerEmail: string;
       paidAt?: Date;
     } | null;
-    if (!order) return { success: false, reason: `Order "${orderId}" not found.` };
+    // H2 / ADR-002: only issue a payment link for THIS customer's order. Fail-closed.
+    if (!order || !ownsOrder(order, { customerEmail }))
+      return { success: false, reason: `Order "${orderId}" not found.` };
     if (order.paidAt) return { success: false, reason: `Order "${orderId}" is already paid.` };
 
     if (!paymentLinkProvider) {
