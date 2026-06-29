@@ -12,20 +12,6 @@ export interface EmailSender {
 }
 
 /**
- * Payment-link provider (CONVERSION_CAPABILITY_DESIGN) — generates a customer pay link for an
- * unpaid order (Paystack/Flutterwave). Injected + OPTIONAL: when absent, payment_link
- * fail-closes to "a human will share payment details". It NEVER confirms payment (ADR-068 —
- * only the processor webhook does); it just creates the link.
- */
-export interface PaymentLinkProvider {
-  createLink(args: {
-    orderId: string;
-    amount: number;
-    customerEmail: string;
-  }): Promise<{ url: string; reference: string }>;
-}
-
-/**
  * Host-injected dependencies for the support domain. The tools are domain-owned but
  * run against the host's registered-model repository singletons + services, which the
  * host wires once at boot via setSupportDeps — so this package never imports the host.
@@ -37,8 +23,6 @@ export interface SupportDeps {
   ticketRepository: TicketRepository;
   ticketReplyRepository: TicketReplyRepository;
   emailService: EmailSender;
-  /** Optional — when unset, payment_link degrades to "a human will share payment details". */
-  paymentLinkProvider?: PaymentLinkProvider;
 }
 
 let _deps: SupportDeps | null = null;
