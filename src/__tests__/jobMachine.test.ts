@@ -75,7 +75,9 @@ describe('Job machine — stateful multi-turn slot filling', () => {
   });
 
   it('registry is data-driven + guarded', () => {
-    expect(JOB_TYPE_IDS).toEqual(expect.arrayContaining(['inform', 'discovery', 'order', 'fulfillment', 'recovery']));
+    expect(JOB_TYPE_IDS).toEqual(
+      expect.arrayContaining(['inform', 'discovery', 'order', 'fulfillment', 'recovery']),
+    );
     expect(isJobType('order')).toBe(true);
     expect(isJobType('nope')).toBe(false);
     expect(requiredSlotsFor('unknown-type')).toEqual([]); // unknown ⇒ never pauses

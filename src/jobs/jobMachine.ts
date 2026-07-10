@@ -56,11 +56,17 @@ export function isReady(job: Job, requiredSlots: readonly string[]): boolean {
 export function reconcile(job: Job, requiredSlots: readonly string[]): Job {
   if (isTerminal(job.state)) return job;
   const missing = nextMissingSlot(job, requiredSlots);
-  return missing ? { ...job, state: 'paused', awaiting: missing } : { ...job, state: 'active', awaiting: null };
+  return missing
+    ? { ...job, state: 'paused', awaiting: missing }
+    : { ...job, state: 'active', awaiting: null };
 }
 
 /** Open a new job, optionally pre-filling slots extracted from the opening turn. */
-export function startJob(type: string, initialSlots: Record<string, unknown> = {}, requiredSlots: readonly string[] = []): Job {
+export function startJob(
+  type: string,
+  initialSlots: Record<string, unknown> = {},
+  requiredSlots: readonly string[] = [],
+): Job {
   return reconcile({ type, state: 'active', slots: { ...initialSlots }, awaiting: null }, requiredSlots);
 }
 
