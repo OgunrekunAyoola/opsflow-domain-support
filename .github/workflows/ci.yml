@@ -42,7 +42,7 @@ jobs:
         with:
           repository: OgunrekunAyoola/opsflow-contracts
           # Pinned to the live branch until the master cutover (default branch lags the pivot)
-          ref: feat/conversation-driver
+          ref: main
           path: opsflow-contracts
           token: ${{ secrets.CI_REPO_TOKEN }}
       - name: Checkout @opsflow/platform (live source)
@@ -50,7 +50,7 @@ jobs:
         with:
           repository: OgunrekunAyoola/opsflow-platform
           # Pinned to the live branch until the master cutover
-          ref: feat/conversation-driver
+          ref: main
           path: opsflow-platform
           token: ${{ secrets.CI_REPO_TOKEN }}
       - uses: actions/setup-node@v4
