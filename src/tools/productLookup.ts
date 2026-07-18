@@ -15,8 +15,8 @@ export const productLookup: ToolDefinition = {
   name: 'product_lookup',
   description:
     'Look up products in the store catalog by name or keywords. Read-only — returns ' +
-    "each match's name, category, description, and per-variant pricing. Use this to " +
-    'answer product and pricing questions. Does not modify anything.',
+    "each match's name, category, description, price (and per-variant pricing where " +
+    'variants exist). Use this to answer product and pricing questions. Does not modify anything.',
   schema: z.object({
     query: z.string().min(1).describe('Product name or keywords, e.g. "jollof spice"'),
   }),
@@ -32,12 +32,20 @@ export const productLookup: ToolDefinition = {
         name: string;
         category: string;
         description?: string;
+        basePrice?: number;
+        currency?: string;
         variants?: Array<{ sku: string; price: number }>;
       };
       return {
         name: product.name,
         category: product.category,
         description: (product.description ?? '').slice(0, DESC_LEN),
+        // basePrice is the product's price when it has no variants (the common case —
+        // catalog onboarding creates basePrice-only rows). Omitting it starved the
+        // driver of every non-variant price → "price not available" escalations and,
+        // under pressure, invented amounts (stress-run finding, 2026-07-17).
+        price: product.basePrice,
+        currency: product.currency,
         variants: (product.variants ?? []).map((v) => ({ sku: v.sku, price: v.price })),
       };
     });
